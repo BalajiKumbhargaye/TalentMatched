@@ -96,7 +96,33 @@ exports.uploadResume = async (req, res) => {
 
     // Save uploaded file relative URL and updated skills
     user.skills = mergedSkills;
-    user.resumeUrl = `/uploads/${path.basename(filePath)}`;
+    
+    // Safely determine resume filename and path
+    const uploadDir = path.join(__dirname, '../uploads');
+    if (!fs.existsSync(uploadDir)) {
+      try {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      } catch (e) {}
+    }
+
+    const ext = path.extname(req.file.originalname) || '.pdf';
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    const resumeFileName = req.file.filename || `resume-${uniqueSuffix}${ext}`;
+
+    // If file was uploaded to memory, save to uploads if writable
+    if (req.file.buffer && !req.file.path) {
+      try {
+        const destPath = path.join(uploadDir, resumeFileName);
+        fs.writeFileSync(destPath, buffer);
+        user.resumeUrl = `/uploads/${resumeFileName}`;
+      } catch (writeErr) {
+        // Fallback for strictly read-only serverless environments
+        user.resumeUrl = `data:${mimeType};base64,${buffer.toString('base64')}`;
+      }
+    } else {
+      user.resumeUrl = `/uploads/${resumeFileName}`;
+    }
+
     user.resumeOriginalName = req.file.originalname;
     user.resumeUploadedAt = new Date();
 
