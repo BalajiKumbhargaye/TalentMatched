@@ -1,5 +1,20 @@
-// API Base URL (proxied in Vite config or fallback)
-const BASE_URL = '/api';
+// API Base URL - Connects to deployed Render backend in production or VITE_API_URL if provided
+const API_ORIGIN =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD ? 'https://talentmatched.onrender.com' : '');
+
+export const BACKEND_URL = API_ORIGIN ? API_ORIGIN.replace(/\/+$/, '') : (import.meta.env.PROD ? 'https://talentmatched.onrender.com' : 'http://localhost:5000');
+export const BASE_URL = API_ORIGIN ? `${API_ORIGIN.replace(/\/+$/, '')}/api` : '/api';
+
+/**
+ * Helper to get full URL for uploaded files (resumes)
+ */
+export const getFileUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  return `${BACKEND_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+};
+
 
 /**
  * Helper to get authorization headers

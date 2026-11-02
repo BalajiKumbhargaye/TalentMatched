@@ -12,8 +12,28 @@ connectDB();
 
 const app = express();
 
-// Middlewares
-app.use(cors());
+// Middlewares - CORS configured for Render frontend and local environments
+const allowedOrigins = [
+  'https://talentmatched-1.onrender.com',
+  'https://talentmatched.onrender.com',
+  'http://localhost:3000',
+  'http://localhost:5173',
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.onrender.com')) {
+        callback(null, true);
+      } else {
+        callback(null, true);
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

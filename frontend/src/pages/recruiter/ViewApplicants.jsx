@@ -4,6 +4,7 @@ import {
   fetchRecruiterApplicants,
   fetchRecruiterJobs,
   updateApplicantStatus,
+  getFileUrl,
 } from '../../services/api';
 import {
   Users,
@@ -219,7 +220,7 @@ export default function ViewApplicants() {
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem' }}>
                     {student.resumeUrl ? (
                       <a
-                        href={student.resumeUrl}
+                        href={getFileUrl(student.resumeUrl)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="btn btn-sm btn-secondary"
