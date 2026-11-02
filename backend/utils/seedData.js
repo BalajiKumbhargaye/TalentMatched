@@ -1,6 +1,12 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const path = require('path');
+const dns = require('dns');
+
+try {
+  dns.setServers(['8.8.8.8', '8.8.4.4']);
+} catch (e) {}
+
 const User = require('../models/User');
 const Job = require('../models/Job');
 const Application = require('../models/Application');
@@ -9,9 +15,23 @@ dotenv.config({ path: path.join(__dirname, '../.env') });
 
 const seedDatabase = async () => {
   try {
-    const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/talentmatch';
+    let mongoUri = process.env.MONGODB_URI;
+    if (
+      !mongoUri ||
+      mongoUri.includes('<') ||
+      (!mongoUri.startsWith('mongodb://') && !mongoUri.startsWith('mongodb+srv://'))
+    ) {
+      mongoUri = 'mongodb+srv://kumbhargayebd_db_user:2tmBt8EhoNae2p3S@cluster0.qvzzhw4.mongodb.net/talentmatch?retryWrites=true&w=majority';
+    }
+
+    if (!mongoUri.includes('talentmatch') && mongoUri.startsWith('mongodb+srv://')) {
+      if (mongoUri.endsWith('/')) {
+        mongoUri = `${mongoUri}talentmatch?retryWrites=true&w=majority`;
+      }
+    }
+
     await mongoose.connect(mongoUri);
-    console.log('Connected to MongoDB for database seeding...');
+    console.log(`Connected to MongoDB for database seeding: ${mongoUri.split('@')[1] || mongoUri}...`);
 
     // Clear existing data
     await User.deleteMany({});
